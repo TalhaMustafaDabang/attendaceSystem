@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<style>
+/* #myCanvas{
+    background-image: url('./ml.jpg');
+} */
+</style>
+<body>
+<div>
+ <input type="file" onchange="uploadFile()" id="image"/>   
+<button onclick="removeBackground()">removeBackground</button>
+<button onclick="retainBackground()">retainBackground</button>
+ 
+</div>
+<div>
+ <canvas id="myCanvas" width="1500" height="700">
+ </canvas>
+</div>
+
+<script src="face-api.js"></script>
+
+<script async>
+    let canvas=document.getElementById('myCanvas');
+    const MODEL = "./models";
+    let imgSrc="";
+    const uploadFile = () => {
+            clearCanvas();
+            imgSrc="";
+            let file = document.getElementById('image').files[0];
+            let reader  = new FileReader();
+            reader.onloadend = () => {
+                canvas.style.backgroundImage=`url(${reader.result})`;
+                imgSrc=reader.result;
+            }
+
+            if(file){
+                reader.readAsDataURL(file);
+            }else{
+                canvas.style.backgroundImage=`url(aa.jpg)`;
+            }
+            setTimeout(()=>{ab();},2000);
+        }
+
+
+
+    let ab=async()=>{
+        console.log("1")
+    await faceapi.loadSsdMobilenetv1Model(MODEL),
+    await faceapi.loadFaceLandmarkModel(MODEL),
+    await faceapi.loadFaceRecognitionModel(MODEL)
+    
+    const input = new Image();
+    input.src=imgSrc;
+    let fullFaceDescription=await faceapi.detectAllFaces(input).withFaceLandmarks().withFaceDescriptors();
+    // fullFaceDescription=fullFaceDescription[0].forSize(1000,1000)
+    // fullFaceDescription 
+    const detectionsArray = fullFaceDescription.forEach(face=>{return face.detection})
+
+
+fullFaceDescription.forEach(face=>{face.landmarks.positions.forEach(point=>{
+    drawPixel(point.x,point.y);
+    
+    console.log(point.x,point.y)
+})})
+
+function drawPixel(x,y){	
+  	var ctx = document.getElementById("myCanvas").getContext("2d");
+
+
+  	ctx.fillStyle = "#ff2626"; // Red color
+
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2, true);
+    ctx.fill();
+}
+
+
+
+    // faceapi.drawDetection(canvas,detectionsArray,{withScore: true});
+console.log("da"+detectionsArray+"\n",fullFaceDescription)    
+}
+
+
+    const clearCanvas = () => canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height)
+
+
+    const removeBackground = () => {
+        document.getElementById('myCanvas').style.background="none"
+    }
+
+    const retainBackground = () => {
+        document.getElementById('myCanvas').style.backgroundImage=`url(${imgSrc})`;
+    }
+
+
+</script>
+   
+</body>
+</html>
